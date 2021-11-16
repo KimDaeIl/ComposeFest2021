@@ -3,12 +3,18 @@ package com.codelab.basics
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,7 +40,7 @@ class MainActivity: ComponentActivity() {
  */
 
 @Composable
-fun MyApp(){
+fun MyApp() {
     /*
         In Composable functions,
         state that is read or modified by multiple functions should live in a common ancestor—this process is called [state hoisting].
@@ -49,16 +55,16 @@ fun MyApp(){
      */
     var shouldShowOnBoarding by rememberSaveable { mutableStateOf(true) }
 
-    if(shouldShowOnBoarding) {
+    if (shouldShowOnBoarding) {
         OnBoardingScreen { shouldShowOnBoarding = false }
-    }
-    else {
+    } else {
         Greetings()
     }
 
 }
+
 @Composable
-fun Greetings(names: List<String> = List(1000){it.toString()}) {
+fun Greetings(names: List<String> = List(1000) { it.toString() }) {
     /*
         To display a scrollable column we use a LazyColumn.
         LazyColumn renders only the visible items on screen, allowing performance gains when rendering a big list.
@@ -90,7 +96,24 @@ fun Greeting(name: String) {
     val expanded = rememberSaveable {
         mutableStateOf(false)
     }
-    val extraPadding = if (expanded.value) 48.dp else 0.dp
+
+    /*
+        https://developer.android.com/jetpack/compose/animation?authuser=4
+        It returns a State object whose value will continuously be updated by the animation until it finishes.
+        It takes a "target value" whose type is Dp
+
+        [animationSpec] parameter that lets you customize the animation.
+
+        ** Note that we are also making sure that padding is never negative, otherwise it could crash the app.
+        This introduces a subtle animation bug that we'll fix later in Finishing touches.
+     */
+    val extraPadding by animateDpAsState(
+        if (expanded.value) 48.dp else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    )
     Surface(
         color = MaterialTheme.colors.primary,
 //        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
@@ -115,11 +138,13 @@ fun Greeting(name: String) {
 }
 
 @Composable
-fun OnBoardingScreen(onContinueClicked:()-> Unit) {
+fun OnBoardingScreen(onContinueClicked: () -> Unit) {
 
-    Surface(modifier = Modifier
-        .fillMaxWidth()
-        .fillMaxHeight()) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+    ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Center,
@@ -139,7 +164,7 @@ fun OnBoardingScreen(onContinueClicked:()-> Unit) {
 @Composable
 fun DefaultPreview() {
     BasicsCodelab2Theme {
-        OnBoardingScreen{}
+        OnBoardingScreen {}
 //        MyApp()
     }
 }
