@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,8 +39,15 @@ fun MyApp(){
         In Composable functions,
         state that is read or modified by multiple functions should live in a common ancestor—this process is called [state hoisting].
         To hoist means to lift or elevate.
+
+        ---------------
+
+        The [remember] function works only as long as the composable is kept in the Composition.
+        When you rotate, the whole activity is restarted so all state is lost.
+        Instead of using remember you can use [rememberSaveable].
+        This will save each state surviving configuration changes (such as rotations) and process death.
      */
-    var shouldShowOnBoarding by remember { mutableStateOf(true) }
+    var shouldShowOnBoarding by rememberSaveable { mutableStateOf(true) }
 
     if(shouldShowOnBoarding) {
         OnBoardingScreen { shouldShowOnBoarding = false }
@@ -59,6 +67,8 @@ fun Greetings(names: List<String> = List(1000){it.toString()}) {
         ** Note: Make sure you
             import androidx.compose.foundation.lazy.items
             as Android Studio will pick a different items function by default.
+
+        LazyColumn, LazyRow not recycle it's child like RecyclerView
      */
     LazyColumn(modifier = Modifier.padding(4.dp)) {
         items(items = names) { name ->
@@ -77,7 +87,7 @@ fun Greeting(name: String) {
         The composable function will automatically be "subscribed" to the state. If the state changes,
         composables that read these fields will be recomposed to display the updates.
      */
-    val expanded = remember {
+    val expanded = rememberSaveable {
         mutableStateOf(false)
     }
     val extraPadding = if (expanded.value) 48.dp else 0.dp
