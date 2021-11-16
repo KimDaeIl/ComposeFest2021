@@ -3,17 +3,10 @@ package com.codelab.basics
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,13 +31,29 @@ Composable 내부에서 일반 메소드 호출 가능
  */
 
 @Composable
-fun MyApp(names: List<String> = listOf("World", "Compose")) {
+fun MyApp(){
+    /*
+    In Composable functions,
+    state that is read or modified by multiple functions should live in a common ancestor—this process is called [state hoisting].
+    To hoist means to lift or elevate.
+     */
+    var shouldShowOnBoarding by remember { mutableStateOf(true) }
+
+    if(shouldShowOnBoarding) {
+        OnBoardingScreen { shouldShowOnBoarding = false }
+    }
+    else {
+        Greetings()
+    }
+
+}
+@Composable
+fun Greetings(names: List<String> = listOf("World", "Compose")) {
     Column(modifier = Modifier.padding(4.dp)) {
         for (s in names) {
             Greeting(name = s)
         }
     }
-//    Greeting(name = "Android")
 }
 
 @Composable
@@ -59,34 +68,54 @@ composables that read these fields will be recomposed to display the updates.
     val expanded = remember {
         mutableStateOf(false)
     }
-    val extraPadding = if(expanded.value) 48.dp else 0.dp
+    val extraPadding = if (expanded.value) 48.dp else 0.dp
     Surface(
         color = MaterialTheme.colors.primary,
 //        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
         modifier = Modifier.padding(4.dp)
     ) {
-        Row (modifier = Modifier.padding(24.dp)){
+        Row(modifier = Modifier.padding(24.dp)) {
 
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
                     .padding(bottom = extraPadding)
             ) {
                 Text(text = "Hello,")
                 Text(text = "$name!")
             }
             OutlinedButton(onClick = { expanded.value = !expanded.value }) {
-                Text(text = if(expanded.value) "Show Less" else "Show More" )
+                Text(text = if (expanded.value) "Show Less" else "Show More")
             }
-            
+
         }
     }
 }
 
+@Composable
+fun OnBoardingScreen(onContinueClicked:()-> Unit) {
 
-@Preview(showBackground = true, widthDp = 320)
+    Surface(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Welcome to the Basics Codelabs!")
+            Button(modifier = Modifier.padding(24.dp), onClick = onContinueClicked) {
+                Text(text = "Continue")
+            }
+        }
+
+    }
+}
+
+
+@Preview(showBackground = true, widthDp = 320, heightDp = 320)
 @Composable
 fun DefaultPreview() {
     BasicsCodelab2Theme {
-        MyApp()
+        OnBoardingScreen{}
+//        MyApp()
     }
 }
